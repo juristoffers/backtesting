@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SFP SMA</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <div id="chart"></div>
+
+    <script>
+        fetch('http://localhost:3000/trade-data')  // Pointing to the localhost API endpoint
+    .then(response => response.json())
+    .then(data => {
+        const tradeData = data;
+        renderChart(tradeData);
+    })
+    .catch(error => console.error('Error fetching data:', error));
+
+
+        function renderChart(tradeData) {
+            const dates = tradeData.map(d => d.date);
+            const prices = tradeData.map(d => d.price);
+            const actions = tradeData.map(d => d.action);
+
+            const tracePrice = {
+                type: 'scatter',
+                mode: 'lines',
+                name: 'BTC Price',
+                x: dates,
+                y: prices,
+                line: { color: '#17BECF' }
+            };
+
+            const traceTrades = {
+                type: 'scatter',
+                mode: 'markers',
+                name: 'Trades',
+                x: dates.filter((d, i) => actions[i] === 'Buy' || actions[i] === 'Sell'),
+                y: prices.filter((d, i) => actions[i] === 'Buy' || actions[i] === 'Sell'),
+                marker: {
+                    size: 10,
+                    color: actions.map(a => a === 'Buy' ? 'green' : 'red')
+                }
+            };
+
+            const layout = {
+                title: 'Trading Strategy Performance',
+                xaxis: { title: 'Date' },
+                yaxis: { title: 'Price' }
+            };
+
+            Plotly.newPlot('chart', [tracePrice, traceTrades], layout);
+        }
+    </script>
+</body>
+</html>
